@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    version: v1
+    app: zookeeper
+    team: cartao-branco
+  name: zookeeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+        version: v1
+    spec:
+      containers:
+        - image: confluentinc/cp-zookeeper:5.2.1
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: zookeeper-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "700m"
+            limits:
+              memory: "512Mi"
+              cpu: "900m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8888
+              scheme: HTTP
+            initialDelaySeconds: 60
+          name: zookeeper
+          # verificar qual porta o zookeeper expoe
+          ports:
+            - containerPort: 8888
+              name: http
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8888
+              scheme: HTTP
+            initialDelaySeconds: 60
